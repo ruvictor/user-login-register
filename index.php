@@ -28,7 +28,10 @@ switch($a){
         break;
     }
     case 'dashboard': {
-        $User -> Is_Login() ?  $User->Dashboard() : 'Session expired!';
+        if($User -> Is_Login())
+            echo $User->Dashboard();
+        else
+            echo "Session expired!";
         break;
     }
     default: {

@@ -2,7 +2,7 @@
 require_once(realpath(dirname(__FILE__) . '/../../config.php'));
 class User {
     function Dashboard(){
-        echo 'Dashboard Content <a href="exit.php">Exit</a>';
+        return 'Dashboard Content <a href="exit.php">Exit</a>';
     }
 	function generateCode($length=6){
 		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPRQSTUVWXYZ0123456789";
@@ -37,7 +37,7 @@ class User {
 							'hash' 	=> $hash,
 							'ex_user' 	=> $info['id']
 					));
-					setcookie("check", $info['id'], time()+60*60*24*30, "/", NULL);
+					setcookie("id", $info['id'], time()+60*60*24*30, "/", NULL);
 					setcookie("sess", $hash, time()+60*60*24*30, "/", NULL);
 					echo("<script>location.href = '/user-login-register/?a=dashboard';</script>");
 				}
@@ -90,7 +90,7 @@ class User {
 					<form id="logform" action="?a=login" method="POST" >
 						<input type="text" name="email" placeholder="Email" />
 						<input type="password" name="pass" placeholder="Password" />
-						<input type="submit" value="Log in" />
+						<input type="submit" value="Login" /> <a class="regBtn" href="?a=register">Register</a>
 					</form>
 				</div>
 			</div>
@@ -115,7 +115,7 @@ class User {
 						<input type="text" name="email" placeholder="Email" />
 						<input type="password" name="pass1" placeholder="Password" />
 						<input type="password" name="pass2" placeholder="Repeat Password" />
-						<input type="submit" value="Register" />
+						<input type="submit" value="Register" /> <a class="regBtn" href="?a=login">Login</a>
 					</form>
 				</div>
 			</div>
@@ -123,18 +123,18 @@ class User {
     }
     function Is_Login(){
 		$bd = new Connect;
-		if (isset($_COOKIE['check']) and isset($_COOKIE['sess']))
+		if (isset($_COOKIE['id']) and isset($_COOKIE['sess']))
 		{
-			$id = intval($_COOKIE['check']);
+			$id = intval($_COOKIE['id']);
 			$userdata = $bd->prepare("SELECT id, session FROM users WHERE id =:id_user LIMIT 1");
 			$userdata -> execute(array(
 					'id_user' => $id
 			));
 			$userdataa = $userdata->fetch(PDO::FETCH_ASSOC);
 			if(($userdataa['session'] != $_COOKIE['sess'])
-			or ($userdataa['id'] != intval($_COOKIE['check'])))
+			or ($userdataa['id'] != intval($_COOKIE['id'])))
 				{
-					setcookie('check', '', time() - 60*24*30*12, "/", NULL);
+					setcookie('id', '', time() - 60*24*30*12, "/", NULL);
 					setcookie('sess', '', time() - 60*24*30*12, "/", NULL);
 					return FALSE;
 				}else{
