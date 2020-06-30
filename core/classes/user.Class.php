@@ -4,9 +4,6 @@ class User {
     function Dashboard(){
         echo 'Dashboard Content <a href="exit.php">Exit</a>';
     }
-    function RegisterForm(){
-        return 'Register Form';
-    }
 	function generateCode($length=6){
 		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPRQSTUVWXYZ0123456789";
 		$code = ""; 
@@ -16,7 +13,7 @@ class User {
 		}
 		return $code;
 	}
-    function CheckData($email, $pass){
+    function CheckLoginData($email, $pass){
         $db = new Connect;
         $result = '';
 		if(isset($email) && isset($pass)){
@@ -48,6 +45,40 @@ class User {
         }
         return $result;
     }
+    function CheckRegisterData(
+        $f_name,
+        $l_name,
+        $email,
+        $pass1,
+        $pass2
+    ){
+        $db = new Connect;
+        $result = '';
+		if(isset($f_name) && isset($l_name) && isset($email) && isset($pass1) && isset($pass2)){
+			$f_name=stripslashes(htmlspecialchars($f_name));
+			$l_name=stripslashes(htmlspecialchars($l_name));
+			$email=stripslashes(htmlspecialchars($email));
+			$pass1=stripslashes(htmlspecialchars(md5(md5(trim($pass1)))));
+			$pass2=stripslashes(htmlspecialchars(md5(md5(trim($pass2)))));
+			if (empty($f_name) or empty($l_name) or empty($email) or empty($pass1) or empty($pass2)){
+				$result .= "<div class=\"error\"><p><strong>ERROR:</strong> All fields are required!</p></div>";
+			}else{
+				$user = $db->prepare("INSERT INTO users (first_name, last_name, email, password) VALUES (:first_name,:last_name,:email,:password)");
+				$user->execute(array(
+						'first_name' => $f_name,
+						'last_name'  => $l_name,
+						'email'  => $email,
+						'password'  => $pass1,
+						));
+				if (!$user){
+					$result .= "<div class=\"error\"><p><strong>ERROR:</strong> We couldn't register this user!</div>";
+				}else{
+					echo("<script>location.href = '/user-login-register/?a=login';</script>");
+				}
+			}
+        }
+        return $result;
+    }
     function LoginForm(){
 		return '
 			<div class="form_block">
@@ -55,11 +86,36 @@ class User {
 					Log In
 				</div>
 				<div class="body">
-				' . ($_POST ? $this->CheckData($_POST['email'], $_POST['pass']) : '') . '
+				' . ($_POST ? $this->CheckLoginData($_POST['email'], $_POST['pass']) : '') . '
 					<form id="logform" action="?a=login" method="POST" >
 						<input type="text" name="email" placeholder="Email" />
 						<input type="password" name="pass" placeholder="Password" />
 						<input type="submit" value="Log in" />
+					</form>
+				</div>
+			</div>
+		';
+    }
+    function RegisterForm(){
+		return '
+			<div class="form_block">
+				<div id="title">
+					Registration
+				</div>
+				<div class="body">
+				' . ($_POST ? $this->CheckRegisterData(
+                        $_POST['f_name'],
+                        $_POST['l_name'],
+                        $_POST['email'],
+                        $_POST['pass1'],
+                        $_POST['pass2']) : '') . '
+					<form id="logform" action="?a=register" method="POST" >
+						<input type="text" name="f_name" placeholder="First Name" />
+						<input type="text" name="l_name" placeholder="Last Name" />
+						<input type="text" name="email" placeholder="Email" />
+						<input type="password" name="pass1" placeholder="Password" />
+						<input type="password" name="pass2" placeholder="Repeat Password" />
+						<input type="submit" value="Register" />
 					</form>
 				</div>
 			</div>
